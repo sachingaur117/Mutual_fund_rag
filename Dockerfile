@@ -15,12 +15,8 @@ COPY requirements.txt .
 # Install standard Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Create a non-root user for security
-RUN useradd -m appuser && chown -R appuser /app
-USER appuser
-
-# Copy the current directory contents into the container at /app (and give appuser ownership)
-COPY --chown=appuser:appuser . .
+# Copy the current directory contents into the container at /app
+COPY . .
 
 # Expose port (Render defaults to 10000)
 EXPOSE 10000
