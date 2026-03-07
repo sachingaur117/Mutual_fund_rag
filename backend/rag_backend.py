@@ -106,7 +106,14 @@ def _get_collection():
     global _collection
     if _collection is None:
         db_path = str(ROOT_DIR / "vector_db") if CHROMA_DB_PATH.startswith(".") else CHROMA_DB_PATH
-        client = chromadb.PersistentClient(path=db_path)
+        
+        # We need to tell Chroma to not try to acquire write locks if deployed
+        from chromadb.config import Settings
+        
+        client = chromadb.PersistentClient(
+            path=db_path,
+            settings=Settings(anonymized_telemetry=False, allow_reset=False)
+        )
         ef = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=EMBEDDING_MODEL
         )
