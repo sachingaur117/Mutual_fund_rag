@@ -108,10 +108,15 @@ export default function Home() {
                 <div className="px-4 md:px-6 mb-4 md:mb-8">
                     <div className="flex items-center justify-between md:justify-start gap-3">
                         <div className="flex items-center gap-3">
-                            <div className="bg-[#00d09c] w-9 h-9 flex items-center justify-center rounded-lg shadow-[0_0_15px_rgba(0,208,156,0.3)]">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 11.17 21.9 10.36 21.71 9.58L19.5 11.5C19.82 11.75 20 12.11 20 12.5V17.5C20 18.05 19.55 18.5 19 18.5H5C4.45 18.5 4 18.05 4 17.5V7.5C4 6.95 4.45 6.5 5 6.5H15.5L17.5 4.5H5C3.34 4.5 2 5.84 2 7.5V17.5C2 19.16 3.34 20.5 5 20.5H19C20.66 20.5 22 19.16 22 17.5V10.5L20.5 12V17.5H4.5V7.5H16.5L14.5 9.5H5.5V16.5H18.5V13.5L20 12V17.5H4.5V7.5H16.5L14.5 9.5H5.5V16.5H18.5V13.5L20 12V17.5H4.5V7.5H16.5L14.5 9.5H5.5V16.5H18.5V13.5" fill="white" />
-                                    <circle cx="12" cy="12" r="5" fill="white" />
+                            <div className="w-10 h-10 shrink-0">
+                                <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <mask id="circle-mask">
+                                        <circle cx="50" cy="50" r="50" fill="white" />
+                                    </mask>
+                                    <g mask="url(#circle-mask)">
+                                        <rect width="100%" height="100%" fill="#5367FF" />
+                                        <path d="M0 60 L35 85 L65 40 L100 60 V100 H0 Z" fill="#00D09C" />
+                                    </g>
                                 </svg>
                             </div>
                             <div>
