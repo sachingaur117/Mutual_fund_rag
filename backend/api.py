@@ -87,6 +87,7 @@ class FundInfo(BaseModel):
 
 # ─── Routes ───────────────────────────────────────────────────────────────────
 @app.get("/health", tags=["Meta"])
+@app.head("/health", tags=["Meta"])
 async def health():
     """Liveness probe — used by Render, Railway, k8s, UptimeRobot etc."""
     return {"status": "ok"}
