@@ -303,12 +303,9 @@ def query_rag(fund_id: str, question: str) -> dict:
         log.error(f"Gemini API error: {e}")
         return _refusal_response(fund_name, f"LLM error: {e}", "no_context")
 
-    # ── Step 4: Format citation footer ──────────────────────────────────────
-    updated_display = last_updated[:10] if last_updated else "Unknown"
-    citation = f"\n\n📄 Source: {source_url} | Last Updated: {updated_display}"
-
+    # ── Step 4: Format response ──────────────────────────────────────────────
     return {
-        "answer":       answer + citation,
+        "answer":       answer,
         "source_url":   source_url,
         "last_updated": last_updated,
         "fund_name":    fund_name,
