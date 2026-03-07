@@ -15,6 +15,10 @@ COPY requirements.txt .
 # Install standard Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download the HuggingFace embeddings model so it is cached inside the Docker image
+# This prevents the first /ask request from taking 60+ seconds and timing out on Render
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
 # Copy the current directory contents into the container at /app
 COPY . .
 
