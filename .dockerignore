@@ -1,0 +1,18 @@
+# Python environment and cache
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Frontend (Node modules and Next build artifacts take immense space)
+frontend/node_modules/
+frontend/.next/
+
+# Scraped data
+data/
+
+# Version control
+.git/

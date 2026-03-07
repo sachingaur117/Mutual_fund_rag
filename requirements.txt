@@ -20,3 +20,7 @@ google-generativeai>=0.7.0
 
 # Frontend (Phase 4)
 streamlit>=1.35.0
+
+# Backend API (Phase 4)
+fastapi>=0.111.0
+uvicorn>=0.30.0
