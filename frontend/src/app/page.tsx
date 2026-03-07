@@ -220,11 +220,14 @@ export default function Home() {
                 {/* Example Questions */}
                 <div className="px-4 md:px-8 pb-2 opacity-80 overflow-x-auto scrollbar-hide flex gap-2">
                     {[
-                        "Expense ratio of ?",
-                        "ELSS lock-in?",
-                        "Minimum SIP?",
-                        "Exit load?",
-                        "Riskometer/benchmark?"
+                        "What is the expense ratio?",
+                        "What are the exit load charges?",
+                        "Tell me about the investment objective",
+                        "Who is the fund manager?",
+                        "What is the minimum SIP amount?",
+                        "Explain the riskometer and benchmark",
+                        "What is the lock-in period for ELSS?",
+                        "How can I request my account statement?"
                     ].map((q) => (
                         <button
                             key={q}
