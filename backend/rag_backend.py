@@ -100,6 +100,20 @@ REFUSAL_NO_CONTEXT = (
 # ChromaDB client (singleton-ish — cached at module level)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
+
+class GeminiEmbeddingFunction(EmbeddingFunction):
+    def __init__(self, api_key: str, model_name: str = "gemini-embedding-001"):
+        self.client = genai.Client(api_key=api_key)
+        self.model_name = model_name
+
+    def __call__(self, input: Documents) -> Embeddings:
+        response = self.client.models.embed_content(
+            model=self.model_name,
+            contents=input,
+        )
+        return [e.values for e in response.embeddings]
+
 _collection = None
 
 def _get_collection():
@@ -114,9 +128,13 @@ def _get_collection():
             path=db_path,
             settings=Settings(anonymized_telemetry=False, allow_reset=False)
         )
-        ef = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name=EMBEDDING_MODEL
-        )
+        
+        gemini_api_key = os.getenv("GEMINI_API_KEY", "")
+        if not gemini_api_key:
+            log.error("GEMINI_API_KEY environment variable is required for embeddings.")
+            
+        ef = GeminiEmbeddingFunction(api_key=gemini_api_key)
+        
         _collection = client.get_or_create_collection(
             name=CHROMA_COLLECTION,
             embedding_function=ef,
