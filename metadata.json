@@ -6,9 +6,9 @@
       "last_updated": "2026-03-07T09:52:08.868339+00:00"
     },
     "scheme_summary": {
-      "url": "https://files.hdfcfund.com/s3fs-public/2026-02/HDFCT2.pdf",
-      "md5": "7d1d3a5934c674300d9c555c41690861",
-      "last_updated": "2026-03-07T09:54:20.821119+00:00"
+      "url": "https://files.hdfcfund.com/s3fs-public/scheme_summary/2026-05/HDFCT2_1778648545.pdf",
+      "md5": "f72852d000cf31ee9c808aef386a0bb4",
+      "last_updated": "2026-05-28T10:02:29.291813+00:00"
     }
   },
   "hdfc_elss": {
@@ -18,9 +18,9 @@
       "last_updated": "2026-03-07T09:52:50.269294+00:00"
     },
     "scheme_summary": {
-      "url": "https://files.hdfcfund.com/s3fs-public/2026-02/HDFCTS.pdf",
-      "md5": "869a8e5dff44bb95c426a695f256c5e9",
-      "last_updated": "2026-03-07T09:54:30.313300+00:00"
+      "url": "https://files.hdfcfund.com/s3fs-public/scheme_summary/2026-05/HDFCTS_1778648545.pdf",
+      "md5": "c683ab161c1d977ce81e85ee5c209283",
+      "last_updated": "2026-05-28T10:02:40.380014+00:00"
     }
   },
   "hdfc_flexi_cap": {
@@ -30,9 +30,9 @@
       "last_updated": "2026-03-07T09:53:41.513077+00:00"
     },
     "scheme_summary": {
-      "url": "https://files.hdfcfund.com/s3fs-public/2026-02/HDFCEQ.pdf",
-      "md5": "9df5890bd7a5d5175200d185b9c88df6",
-      "last_updated": "2026-03-07T09:54:39.718768+00:00"
+      "url": "https://files.hdfcfund.com/s3fs-public/scheme_summary/2026-05/HDFCEQ_1778648558.pdf",
+      "md5": "f4a418995b4f577aba49025bf25d00ab",
+      "last_updated": "2026-05-28T10:02:51.209703+00:00"
     }
   }
 }
