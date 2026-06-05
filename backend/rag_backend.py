@@ -26,7 +26,48 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import requests
 import chromadb
+
+# ─── Fund to API scheme codes ──────────────────────────────────────────────────
+FUND_SCHEME_CODES = {
+    "hdfc_large_cap": "119018",
+    "hdfc_elss":      "119060",
+    "hdfc_flexi_cap": "118955",
+}
+
+# ─── Live NAV Helper Functions ────────────────────────────────────────────────
+NAV_KEYWORDS = re.compile(
+    r"\b(nav|net\s+asset\s+value|current\s+price|today'?s\s+price|latest\s+price|unit\s+price|current\s+nav|latest\s+nav)\b",
+    re.IGNORECASE,
+)
+
+def _is_nav_query(question: str) -> bool:
+    """Returns True if the user question is asking for the NAV / price of the fund."""
+    return bool(NAV_KEYWORDS.search(question))
+
+def _fetch_latest_nav(scheme_code: str) -> Optional[dict]:
+    """
+    Fetch latest NAV data from api.mfapi.in.
+    Returns: dict with keys 'nav' and 'date', or None if API fails.
+    """
+    url = f"https://api.mfapi.in/mf/{scheme_code}"
+    try:
+        log.info(f"[API] Fetching latest NAV from {url}")
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        if data.get("status") == "SUCCESS" and data.get("data"):
+            latest = data["data"][0]  # First element is the latest daily entry
+            return {
+                "nav": latest.get("nav"),
+                "date": latest.get("date")
+            }
+        else:
+            log.warning(f"[API] Request succeeded but returned no data: {data}")
+    except Exception as e:
+        log.error(f"[API] Failed to fetch NAV from {url}: {e}")
+    return None
 from chromadb.utils import embedding_functions
 from dotenv import load_dotenv
 import google.genai as genai
@@ -207,7 +248,15 @@ def query_rag(fund_id: str, question: str) -> dict:
         log.info(f"[REFUSAL:advice] {fund_id} — {question[:60]}")
         return _refusal_response(fund_name, advice_refusal, "advice")
 
-    # ── Step 1: Retrieve relevant chunks from ChromaDB ──────────────────────
+    # ── Step 1: Check Live API Intent (NAV) ──────────────────────────────────
+    nav_data = None
+    is_nav = _is_nav_query(question)
+    if is_nav:
+        scheme_code = FUND_SCHEME_CODES.get(fund_id)
+        if scheme_code:
+            nav_data = _fetch_latest_nav(scheme_code)
+
+    # ── Step 2: Retrieve relevant chunks from ChromaDB ──────────────────────
     collection = _get_collection()
     try:
         results = collection.query(
@@ -228,13 +277,14 @@ def query_rag(fund_id: str, question: str) -> dict:
         return _refusal_response(fund_name, REFUSAL_NO_CONTEXT, "no_context")
 
     # ── Guard 3: Confidence threshold ────────────────────────────────────────
+    # For NAV queries, if the database has low confidence, we bypass the block and return the API result directly.
     best_distance = distances[0] if distances else 999.0
     log.info(f"[RETRIEVAL] Best distance: {best_distance:.4f} (threshold: {CONFIDENCE_THRESHOLD})")
-    if best_distance > CONFIDENCE_THRESHOLD:
+    if best_distance > CONFIDENCE_THRESHOLD and not nav_data:
         log.info(f"[REFUSAL:no_context] distance too high ({best_distance:.4f})")
         return _refusal_response(fund_name, REFUSAL_NO_CONTEXT, "no_context")
 
-    # ── Step 2: Small-to-Big Context Expansion ──────────────────────────────
+    # ── Step 3: Small-to-Big Context Expansion ──────────────────────────────
     source_url   = metadatas[0].get("source_url", "") if metadatas else ""
     last_updated = metadatas[0].get("last_updated", "") if metadatas else ""
 
@@ -284,12 +334,20 @@ def query_rag(fund_id: str, question: str) -> dict:
         f"Answer (3 sentences max, strictly from the context above):"
     )
 
-    # ── Step 3: Call Gemini ──────────────────────────────────────────────────
+    # ── Step 4: Call Gemini ──────────────────────────────────────────────────
     system_instr = SYSTEM_PROMPT or (
         "You are a strictly factual assistant for HDFC Mutual Fund documents. "
         "Answer in 3 sentences or fewer using only the provided context. "
         "Never give investment advice."
     )
+    if nav_data:
+        system_instr += (
+            "\nIf the user is asking about the current NAV or unit price, you must not "
+            "write any numerical values for it. Instead, you MUST use the exact placeholder "
+            "'{{NAV}}' for the NAV value and '{{NAV_DATE}}' for the date in your answer "
+            "(e.g., 'The current NAV is {{NAV}} per unit as of {{NAV_DATE}}')."
+        )
+
     full_prompt = f"{system_instr}\n\n{prompt}"
     try:
         client = _get_gemini_client()
@@ -303,7 +361,14 @@ def query_rag(fund_id: str, question: str) -> dict:
         log.error(f"Gemini API error: {e}")
         return _refusal_response(fund_name, f"LLM error: {e}", "no_context")
 
-    # ── Step 4: Format response ──────────────────────────────────────────────
+    # ── Step 5: Format response & Token Swap ─────────────────────────────────
+    if nav_data:
+        if "{{NAV}}" in answer or "{{NAV_DATE}}" in answer:
+            answer = answer.replace("{{NAV}}", nav_data["nav"]).replace("{{NAV_DATE}}", nav_data["date"])
+        else:
+            # Fallback if LLM refused or did not use placeholders
+            answer = f"The latest NAV of {fund_name} is {nav_data['nav']} as of {nav_data['date']}. " + answer
+
     return {
         "answer":       answer,
         "source_url":   source_url,
@@ -339,6 +404,7 @@ TEST_CASES = [
     ("hdfc_flexi_cap",  "Can you recommend the best mutual fund for me?",       "advice_refusal"),
     ("hdfc_large_cap",  "My PAN is ABCDE1234F, what fund should I buy?",        "pii_refusal"),
     ("hdfc_large_cap",  "What is the capital of France?",                       "no_context"),
+    ("hdfc_large_cap",  "What is the current NAV of the HDFC Large Cap fund?",  "nav_query"),
 ]
 
 if __name__ == "__main__":
@@ -362,6 +428,8 @@ if __name__ == "__main__":
 
         if expected_type == "factual":
             ok = not result["refused"]
+        elif expected_type == "nav_query":
+            ok = not result["refused"] and any(char.isdigit() for char in result["answer"])
         elif expected_type == "advice_refusal":
             ok = result["refused"] and result["refusal_type"] == "advice"
         elif expected_type == "pii_refusal":
