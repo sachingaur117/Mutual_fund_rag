@@ -342,10 +342,11 @@ def query_rag(fund_id: str, question: str) -> dict:
     )
     if nav_data:
         system_instr += (
-            "\nIf the user is asking about the current NAV or unit price, you must not "
-            "write any numerical values for it. Instead, you MUST use the exact placeholder "
-            "'{{NAV}}' for the NAV value and '{{NAV_DATE}}' for the date in your answer "
-            "(e.g., 'The current NAV is {{NAV}} per unit as of {{NAV_DATE}}')."
+            "\nYou have access to the live NAV of the fund via placeholders: '{{NAV}}' represents "
+            "the current Net Asset Value, and '{{NAV_DATE}}' represents the date. You must use "
+            "these placeholders directly in your response when stating the current NAV or unit price. "
+            "Do not state that the context lacks the NAV or that you do not have the information; "
+            "treat the placeholders '{{NAV}}' and '{{NAV_DATE}}' as true and available context facts."
         )
 
     full_prompt = f"{system_instr}\n\n{prompt}"
