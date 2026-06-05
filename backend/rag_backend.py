@@ -54,7 +54,7 @@ def _fetch_latest_nav(scheme_code: str) -> Optional[dict]:
     url = f"https://api.mfapi.in/mf/{scheme_code}"
     try:
         log.info(f"[API] Fetching latest NAV from {url}")
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=15)
         response.raise_for_status()
         data = response.json()
         if data.get("status") == "SUCCESS" and data.get("data"):
